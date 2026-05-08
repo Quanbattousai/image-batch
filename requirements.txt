@@ -1,0 +1,12 @@
+# Web server
+Flask>=3.0.0
+
+# Core image processing
+Pillow>=10.0.0
+
+# HEIF/HEIC support (needed for heif→jpeg/webp conversion)
+pillow-heif>=0.13.0
+
+# PNG lossless optimizer (optional but recommended — falls back to Pillow)
+# Wraps the fast Rust-based oxipng binary
+pyoxipng>=9.0.0

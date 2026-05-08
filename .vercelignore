@@ -1,0 +1,7 @@
+node_modules
+.claude
+web.py
+app.py
+requirements.txt
+examples.bat
+setup.bat
