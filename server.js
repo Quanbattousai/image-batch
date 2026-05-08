@@ -33,6 +33,9 @@ app.post("/process", upload.single("file"), async (req, res) => {
         pipeline = pipeline.flatten({ background: { r: 255, g: 255, b: 255 } })
                            .jpeg({ quality, mozjpeg: true, progressive: true });
         outName  = replaceExt(file.originalname, ".jpg");
+      } else if (fmt === "png") {
+        pipeline = pipeline.png({ compressionLevel: 9, adaptiveFiltering: true });
+        outName  = replaceExt(file.originalname, ".png");
       } else {
         const meta = await sharp(file.buffer).metadata();
         pipeline   = meta.hasAlpha
@@ -65,7 +68,7 @@ app.post("/process", upload.single("file"), async (req, res) => {
 
       const srcFmt    = meta.format;
       const targetFmt = resizeFmt === "original"
-        ? (["jpeg","png","webp"].includes(srcFmt) ? srcFmt : "jpeg")
+        ? (["jpeg","png","webp"].includes(srcFmt) ? srcFmt : "jpeg")   // tiff → jpeg on resize
         : resizeFmt;
 
       if (targetFmt === "jpeg") {
@@ -83,18 +86,25 @@ app.post("/process", upload.single("file"), async (req, res) => {
       }
 
     } else {
-      // optimize — keep format
-      outName = file.originalname;
+      // optimize — keep format (tiff → converted to jpeg)
       if (ext === ".png") {
+        outName  = file.originalname;
         pipeline = pipeline.png({ compressionLevel: 9, adaptiveFiltering: true, palette: false });
       } else if (ext === ".jpg" || ext === ".jpeg") {
+        outName  = file.originalname;
         pipeline = pipeline.flatten({ background: { r: 255, g: 255, b: 255 } })
                            .jpeg({ quality, mozjpeg: true, progressive: true });
       } else if (ext === ".webp") {
+        outName = file.originalname;
         const meta = await sharp(file.buffer).metadata();
         pipeline   = meta.hasAlpha
           ? pipeline.webp({ lossless: true, effort: 6 })
           : pipeline.webp({ quality, effort: 6 });
+      } else if (ext === ".tif" || ext === ".tiff") {
+        // TIFF can't stay as-is in browsers — optimize by converting to JPEG
+        outName  = replaceExt(file.originalname, ".jpg");
+        pipeline = pipeline.flatten({ background: { r: 255, g: 255, b: 255 } })
+                           .jpeg({ quality, mozjpeg: true, progressive: true });
       } else {
         return res.status(422).json({ error: `Unsupported format for optimization: ${ext}` });
       }
@@ -121,7 +131,8 @@ function clamp(v, lo, hi)             { return Math.min(hi, Math.max(lo, v)); }
 function mime(filename) {
   const ext = path.extname(filename).toLowerCase();
   return { ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
-           ".png": "image/png",  ".webp": "image/webp" }[ext] || "application/octet-stream";
+           ".png": "image/png",  ".webp": "image/webp",
+           ".tif": "image/tiff", ".tiff": "image/tiff" }[ext] || "application/octet-stream";
 }
 
 module.exports = app;

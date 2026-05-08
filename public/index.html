@@ -230,13 +230,13 @@
     <p><strong>Drop images here</strong></p>
     <p>or</p>
     <button class="browse-btn" onclick="document.getElementById('file-input').click()">Browse files</button>
-    <input type="file" id="file-input" multiple accept=".png,.jpg,.jpeg,.webp,.heic,.heif" />
+    <input type="file" id="file-input" multiple accept=".png,.jpg,.jpeg,.webp,.heic,.heif,.tif,.tiff" />
   </div>
   <div id="file-list"></div>
   <div id="file-list-footer" class="hidden">
     <button id="clear-btn">Clear all</button>
   </div>
-  <p class="formats-note">Accepted: PNG · JPEG · WebP · HEIC/HEIF</p>
+  <p class="formats-note">Accepted: PNG · JPEG · WebP · HEIC/HEIF · TIFF</p>
 </div>
 
 <!-- Options -->
@@ -255,6 +255,7 @@
     <div class="format-group">
       <button class="format-btn active" data-fmt="jpeg">JPEG</button>
       <button class="format-btn"        data-fmt="webp">WebP</button>
+      <button class="format-btn"        data-fmt="png">PNG</button>
     </div>
     <div class="quality-row">
       <label>Quality</label>
@@ -403,7 +404,7 @@ dropZone.addEventListener('drop', ev => addFiles([...ev.dataTransfer.files]));
 fileInput.addEventListener('change', () => addFiles([...fileInput.files]));
 
 function addFiles(newFiles) {
-  const allowed = new Set(['.png','.jpg','.jpeg','.webp','.heic','.heif']);
+  const allowed = new Set(['.png','.jpg','.jpeg','.webp','.heic','.heif','.tif','.tiff']);
   newFiles.forEach(f => {
     const ext = f.name.slice(f.name.lastIndexOf('.')).toLowerCase();
     if (allowed.has(ext) && !files.find(x => x.name === f.name && x.size === f.size))
